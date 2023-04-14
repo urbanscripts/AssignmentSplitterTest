@@ -1,0 +1,101 @@
+version: '3'
+services:
+ target_1:
+    container_name: target_1
+    build:
+      dockerfile: Dockerfile
+      args:
+        MODE: target  
+    ports:
+      - "5001:9997"
+    volumes:
+      - target_1:/usr/src/app
+    expose:
+      - 5004
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+ target_2:
+    container_name: target_2
+    build:
+      dockerfile: Dockerfile
+      args:
+        MODE: target  
+    ports:
+      - "5002:9997"
+    volumes:
+      - target_2:/usr/src/app
+    depends_on:
+      - target_1
+    expose:
+      - 5003
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+ splitter:
+    container_name: splitter
+    build:
+      dockerfile: Dockerfile
+      args:
+        MODE: splitter 
+    ports:
+      - "4001:9997"
+    depends_on:
+      - target_2
+    expose:
+      - 4003
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4003"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s 
+ agent:
+    container_name: agent
+    build:
+      dockerfile: Dockerfile
+      args:
+        MODE: agent 
+    ports:
+      - "4002:4002"
+    depends_on:
+      - splitter
+    expose:
+      - 4004
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+ #prometheus:
+    #image: prom/prometheus
+    #user: root
+    #volumes:
+     # - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    #ports:
+    #  - "9090:9090"
+    #privileged: true
+ #grafana:
+    #image: grafana/grafana
+    #ports:
+    #  - "3000:3000"
+volumes:
+ target_1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: C:\criblAssesment\vol_target_1
+ target_2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: C:\criblAssesment\vol_target_2

@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 5m
+  scrape_timeout: 1m
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['agent:4002', 'splitter:9997', 'target_2:9997', 'target_1:9997']
